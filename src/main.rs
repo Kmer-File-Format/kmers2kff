@@ -3,16 +3,22 @@ use anyhow::{anyhow, Context, Result};
 use clap::Clap;
 
 /* mod declaration */
+mod bucket;
 mod cli;
 mod error;
-mod bucket;
 mod seq2bits;
 
 fn main() -> Result<()> {
     let params = cli::check_params(cli::Command::parse()).with_context(|| "Check parameter")?;
 
     // generate bucket
-    let bob = bucket::create(&params.input, &params.prefix, params.k, params.m, params.delimiter as u8)?;
+    let bob = bucket::create(
+        &params.input,
+        &params.prefix,
+        params.k,
+        params.m,
+        params.delimiter as u8,
+    )?;
 
     // create kff
     let mut writer = kff::Writer::new(std::fs::File::create(params.output)?, 0b00011011, b"")?;
@@ -27,7 +33,7 @@ fn main() -> Result<()> {
     // iterate over bucket
     for b_id in bob.iter() {
         let bucket = bucket::read(format!("{}{}", params.prefix, b_id))?;
-        let mut seens = std::collections::HashSet::new();
+        let mut seens = rustc_hash::FxHashSet::default();
 
         let mut mini_poss = Vec::new();
         let mut sequences = Vec::new();
@@ -107,28 +113,25 @@ fn main() -> Result<()> {
 
     for kmer in bucket.keys() {
         sequences.push(seq2bits::kmer2seq(*kmer, params.k));
-        datas.push(
-            [*bucket
-                .get(&kmer)
-             .ok_or_else(|| anyhow!("counts not present"))?
-	     ]
-        )
+        datas.push([*bucket
+            .get(&kmer)
+            .ok_or_else(|| anyhow!("counts not present"))?])
     }
 
     writer.write_raw_seq_section(&sequences[..], &datas[..])?;
 
     clean_temp_file(bob, &params.prefix).with_context(|| "clean temporary file")?;
-    
+
     Ok(())
 }
 
-fn clean_temp_file(minis: std::collections::HashSet<u128>, prefix: &str) -> Result<()> {
+fn clean_temp_file(minis: rustc_hash::FxHashSet<u128>, prefix: &str) -> Result<()> {
     for mini in minis {
-	std::fs::remove_file(format!("{}{}", prefix, mini))?;
+        std::fs::remove_file(format!("{}{}", prefix, mini))?;
     }
 
     if std::path::Path::new(&format!("{}multiple", prefix)).exists() {
-	std::fs::remove_file(format!("{}multiple", prefix))?;
+        std::fs::remove_file(format!("{}multiple", prefix))?;
     }
 
     Ok(())
@@ -137,12 +140,12 @@ fn clean_temp_file(minis: std::collections::HashSet<u128>, prefix: &str) -> Resu
 fn predecessor(
     kmer: u128,
     k: u8,
-    set: &std::collections::HashMap<u128, u8>,
-    seens: &mut std::collections::HashSet<u128>,
+    set: &rustc_hash::FxHashMap<u128, u8>,
+    seens: &mut rustc_hash::FxHashSet<u128>,
 ) -> Option<(u128, u8)> {
     let sub = kmer >> 2;
- 
-   for nuc in 0..4 {
+
+    for nuc in 0..4 {
         let pred = ((nuc as u128) << ((k - 1) * 2)) ^ sub;
 
         if !seens.contains(&pred) && set.contains_key(&pred) {
@@ -156,8 +159,8 @@ fn predecessor(
 fn successor(
     kmer: u128,
     k: u8,
-    set: &std::collections::HashMap<u128, u8>,
-    seens: &mut std::collections::HashSet<u128>,
+    set: &rustc_hash::FxHashMap<u128, u8>,
+    seens: &mut rustc_hash::FxHashSet<u128>,
 ) -> Option<(u128, u8)> {
     let mask = (2_u128.pow(k as u32 * 2) - 1) >> 2;
     let sub = (kmer & mask) << 2;

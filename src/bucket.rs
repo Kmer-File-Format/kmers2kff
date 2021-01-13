@@ -14,8 +14,8 @@ pub fn create(
     k: u8,
     m: u8,
     delimiter: u8,
-) -> Result<std::collections::HashSet<u128>> {
-    let mut bob = std::collections::HashSet::<u128>::new();
+) -> Result<rustc_hash::FxHashSet<u128>> {
+    let mut bob = rustc_hash::FxHashSet::<u128>::default();
 
     let input =
         std::io::BufReader::new(std::fs::File::open(input).with_context(|| "Open input file")?);
@@ -48,7 +48,6 @@ pub fn create(
     Ok(bob)
 }
 
-
 pub fn write_kmer(kmer: u128, count: u8, filename: &str) -> Result<()> {
     let mut bucket = if std::path::Path::new(filename).exists() {
         std::fs::OpenOptions::new()
@@ -65,8 +64,8 @@ pub fn write_kmer(kmer: u128, count: u8, filename: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn read(path: String) -> Result<std::collections::HashMap<u128, u8>> {
-    let mut res = std::collections::HashMap::new();
+pub fn read(path: String) -> Result<rustc_hash::FxHashMap<u128, u8>> {
+    let mut res = rustc_hash::FxHashMap::default();
 
     let input = std::io::BufReader::new(std::fs::File::open(path)?);
     let mut reader = csv::ReaderBuilder::new()

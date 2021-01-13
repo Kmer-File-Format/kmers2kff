@@ -71,12 +71,6 @@ pub fn canonical(kmer: u128, k: u8) -> (u128, bool) {
     }
 }
 
-/// Return true if the kmer parity is even
-#[inline(always)]
-pub fn parity_even(kmer: u128) -> bool {
-    kmer.count_ones() % 2 == 0
-}
-
 /// Return the reverse complement of kmer
 #[inline(always)]
 pub fn revcomp(kmer: u128, k: u8) -> u128 {
@@ -86,12 +80,6 @@ pub fn revcomp(kmer: u128, k: u8) -> u128 {
 #[inline(always)]
 fn speed_comp(kmer: u128) -> u128 {
     kmer ^ 0xAAAA_AAAA_AAAA_AAAA_AAAA_AAAA_AAAA_AAAA
-}
-
-/// Return the complement of kmer
-#[inline(always)]
-pub fn comp(kmer: u128, k: u8) -> u128 {
-    speed_comp(kmer) & ((1 << (2 * k)) - 1)
 }
 
 /// Return the reverse of kmer
@@ -200,21 +188,9 @@ mod test {
     }
 
     #[test]
-    fn parity_even_() {
-        assert_eq!(parity_even(0b1111), true);
-        assert_eq!(parity_even(0b1110), false);
-    }
-
-    #[test]
     fn revcomp_() {
         // TAGGC -> 1000111101 revcomp GCCTA -> 1101011000
         assert_eq!(0b1000111101, revcomp(0b1101011000, 5))
-    }
-
-    #[test]
-    fn comp_() {
-        // TAGGC -> 1000111101 comp 0001001011
-        assert_eq!(comp(0b1000111101, 5), 0b0010010111);
     }
 
     #[test]
@@ -270,24 +246,13 @@ mod test {
         for i in 0..(seq.len() + 1 - k as usize) {
             let kmer = seq2bit(seq[i..(i + k as usize)].as_bytes());
 
-            let (mini, pos, forward) = get_minimizer(kmer, k, m);
+            let (_, _, forward) = get_minimizer(kmer, k, m);
 
             if forward {
                 canos.push(kmer);
             } else {
                 canos.push(revcomp(kmer, k));
             }
-
-            println!(
-                "kmer {} rev {} mini {} pos {} mini forward {} min forward {} popcount forward {}",
-                kmer2seq(kmer, k),
-                kmer2seq(revcomp(kmer, k), k),
-                kmer2seq(mini, m),
-                pos,
-                forward,
-                kmer < revcomp(kmer, k),
-                parity_even(kmer)
-            );
         }
 
         assert_eq!(
@@ -309,13 +274,35 @@ mod test {
     #[test]
     fn multi_mini() {
         assert_eq!(multiple_mini(seq2bit(b"ACTG"), seq2bit(b"TG"), 4, 2), false);
-	
-        assert_eq!(multiple_mini(seq2bit(b"TGACTG"), seq2bit(b"TG"), 6, 2), true);
 
-        assert_eq!(multiple_mini(seq2bit(b"TGACTG"), seq2bit(b"TG"), 4, 2), false);
+        assert_eq!(
+            multiple_mini(seq2bit(b"TGACTG"), seq2bit(b"TG"), 6, 2),
+            true
+        );
 
-        assert_eq!(multiple_mini(seq2bit(b"GAGGTACGCGGTTGCCCATCGATATCGGCATG"), seq2bit(b"AGGTACGCGGTTGCCCATCGATATCGGCAT"), 32, 30), false);
+        assert_eq!(
+            multiple_mini(seq2bit(b"TGACTG"), seq2bit(b"TG"), 4, 2),
+            false
+        );
 
-        assert_eq!(multiple_mini(seq2bit(b"GAGGTACGCGGTTGCCCATCGATATCGGCATG"), seq2bit(b"GG"), 32, 2), true);
+        assert_eq!(
+            multiple_mini(
+                seq2bit(b"GAGGTACGCGGTTGCCCATCGATATCGGCATG"),
+                seq2bit(b"AGGTACGCGGTTGCCCATCGATATCGGCAT"),
+                32,
+                30
+            ),
+            false
+        );
+
+        assert_eq!(
+            multiple_mini(
+                seq2bit(b"GAGGTACGCGGTTGCCCATCGATATCGGCATG"),
+                seq2bit(b"GG"),
+                32,
+                2
+            ),
+            true
+        );
     }
 }
