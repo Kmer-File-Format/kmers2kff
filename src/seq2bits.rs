@@ -144,6 +144,25 @@ pub fn get_minimizer(mut kmer: u128, k: u8, m: u8) -> (u128, usize, bool) {
     (minimizer, position, forward)
 }
 
+pub fn multiple_mini(mut kmer: u128, minimizer: u128, k: u8, m: u8) -> bool {
+    let mask = 2_u128.pow(m as u32 * 2) - 1;
+
+    let mut first_time = true;
+    for _ in 0..k {
+        if ((kmer & mask) ^ minimizer) == 0 {
+            if first_time {
+                first_time = false;
+            } else {
+                return true;
+            }
+        }
+
+        kmer >>= 2;
+    }
+
+    false
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -285,5 +304,18 @@ mod test {
             ],
             &canos[..]
         );
+    }
+
+    #[test]
+    fn multi_mini() {
+        assert_eq!(multiple_mini(seq2bit(b"ACTG"), seq2bit(b"TG"), 4, 2), false);
+	
+        assert_eq!(multiple_mini(seq2bit(b"TGACTG"), seq2bit(b"TG"), 6, 2), true);
+
+        assert_eq!(multiple_mini(seq2bit(b"TGACTG"), seq2bit(b"TG"), 4, 2), false);
+
+        assert_eq!(multiple_mini(seq2bit(b"GAGGTACGCGGTTGCCCATCGATATCGGCATG"), seq2bit(b"AGGTACGCGGTTGCCCATCGATATCGGCAT"), 32, 30), false);
+
+        assert_eq!(multiple_mini(seq2bit(b"GAGGTACGCGGTTGCCCATCGATATCGGCATG"), seq2bit(b"GG"), 32, 2), true);
     }
 }
