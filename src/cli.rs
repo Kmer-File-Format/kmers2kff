@@ -24,6 +24,9 @@ pub struct Command {
     #[clap(short = 'm', long = "minimizer-size", about = "Minimizer size")]
     pub m: u8,
 
+    #[clap(short = 'd', long = "delimiter", about="Set delimiter between kmer and count in input", default_value=",")]
+    pub delimiter: char,
+    
     #[clap(
         short = 'p',
         long = "prefix",

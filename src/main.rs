@@ -12,7 +12,7 @@ fn main() -> Result<()> {
     let params = cli::check_params(cli::Command::parse()).with_context(|| "Check parameter")?;
 
     // generate bucket
-    let bob = bucket::create(&params.input, &params.prefix, params.k, params.m)?;
+    let bob = bucket::create(&params.input, &params.prefix, params.k, params.m, params.delimiter as u8)?;
 
     // create kff
     let mut writer = kff::Writer::new(std::fs::File::create(params.output)?, 0b00011011, b"")?;

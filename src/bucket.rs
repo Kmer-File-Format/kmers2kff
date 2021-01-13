@@ -13,13 +13,14 @@ pub fn create(
     prefix: &str,
     k: u8,
     m: u8,
+    delimiter: u8,
 ) -> Result<std::collections::HashSet<u128>> {
     let mut bob = std::collections::HashSet::<u128>::new();
 
     let input =
         std::io::BufReader::new(std::fs::File::open(input).with_context(|| "Open input file")?);
     let mut reader = csv::ReaderBuilder::new()
-        .delimiter(b',')
+        .delimiter(delimiter)
         .has_headers(false)
         .from_reader(input);
     let mut iter = reader.records();
