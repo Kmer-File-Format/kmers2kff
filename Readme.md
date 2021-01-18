@@ -22,7 +22,9 @@ kmers2kff -i <input.csv> -o <output.kff> -k <kmer-size> -m <minimizer-size> -p t
 rm tmp/
 ```
 
-kmers2kff write temporary file in tmp directory. Kmer size must be lower than 65, minimizer size must be lower than kmer size. By default csv delimiter is comma if you want use tabulation call with `-d \t`
+Kmer size must be lower than 65, minimizer size must be lower than kmer size.
+By default csv delimiter is comma if you want use tabulation call with `-d $'\t'`.
+kmers2kff write temporary file in tmp directory.
 
 
 Complete cli:
@@ -46,6 +48,8 @@ OPTIONS:
     -o, --output <output>          Path of the kff file
     -p, --prefix <prefix>          Prefix add before temporary file
 ```
+
+## Build 
 
 ## Minimum supported Rust version
 
