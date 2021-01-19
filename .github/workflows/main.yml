@@ -130,26 +130,6 @@ jobs:
           command: clippy
           args: -- -D warnings
 
-  publish:
-    name: Publish (dry-run)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v1
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
-      - name: Make sure we can publish the crate
-        uses: actions-rs/cargo@v1
-        with:
-          command: publish
-          args: --dry-run
-
   minimum_rust_version:
     runs-on: ubuntu-latest
     steps:
@@ -168,20 +148,3 @@ jobs:
         with:
           command: test
           args: --all-features --no-fail-fast
-
-  wasm:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-          target: wasm32-unknown-unknown
-
-      - name: Build on wasm
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --target wasm32-unknown-unknown --no-default-features 

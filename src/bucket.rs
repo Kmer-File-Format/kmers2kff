@@ -64,10 +64,12 @@ pub fn write_kmer(kmer: u128, count: u8, filename: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn read(path: &String) -> Result<rustc_hash::FxHashMap<u128, u8>> {
+pub fn read(path: &str) -> Result<rustc_hash::FxHashMap<u128, u8>> {
     let mut res = rustc_hash::FxHashMap::default();
 
-    let input = std::io::BufReader::new(std::fs::File::open(path).with_context(|| format!("Read bucket {}", path))?);
+    let input = std::io::BufReader::new(
+        std::fs::File::open(path).with_context(|| format!("Read bucket {}", path))?,
+    );
     let mut reader = csv::ReaderBuilder::new()
         .delimiter(b',')
         .has_headers(false)

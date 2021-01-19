@@ -108,18 +108,18 @@ fn main() -> Result<()> {
     }
 
     if std::path::Path::new(&format!("{}multiple", params.prefix)).exists() {
-	let bucket = bucket::read(&format!("{}multiple", params.prefix))?;
-	let mut sequences = Vec::new();
-	let mut datas = Vec::new();
+        let bucket = bucket::read(&format!("{}multiple", params.prefix))?;
+        let mut sequences = Vec::new();
+        let mut datas = Vec::new();
 
-	for kmer in bucket.keys() {
+        for kmer in bucket.keys() {
             sequences.push(seq2bits::kmer2seq(*kmer, params.k));
             datas.push([*bucket
-			.get(&kmer)
-			.ok_or_else(|| anyhow!("counts not present"))?])
-	}
+                .get(&kmer)
+                .ok_or_else(|| anyhow!("counts not present"))?])
+        }
 
-	writer.write_raw_seq_section(&sequences[..], &datas[..])?;
+        writer.write_raw_seq_section(&sequences[..], &datas[..])?;
     }
     clean_temp_file(bob, &params.prefix).with_context(|| "clean temporary file")?;
 
