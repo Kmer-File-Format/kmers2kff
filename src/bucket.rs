@@ -40,9 +40,8 @@ pub fn create(
             write_kmer(kmer, count, &format!("{}multiple", prefix))?;
         } else {
             write_kmer(kmer, count, &format!("{}{}", prefix, minimizer))?;
+            bob.insert(minimizer);
         }
-
-        bob.insert(minimizer);
     }
 
     Ok(bob)

@@ -9,8 +9,12 @@ mod error;
 mod seq2bits;
 
 fn main() -> Result<()> {
+    env_logger::init();
+    
     let params = cli::check_params(cli::Command::parse()).with_context(|| "Check parameter")?;
 
+    log::info!("Start of bucket creation")
+    
     // generate bucket
     let bob = bucket::create(
         &params.input,
@@ -20,6 +24,8 @@ fn main() -> Result<()> {
         params.delimiter as u8,
     )?;
 
+    log::info!("End of bucket creation")
+    
     // create kff
     let mut writer = kff::Writer::new(std::fs::File::create(params.output)?, 0b00011011, b"")?;
 
@@ -32,6 +38,8 @@ fn main() -> Result<()> {
 
     // iterate over bucket
     for b_id in bob.iter() {
+	log::info!("Compress bucket {}", b_id);
+	
         let bucket = bucket::read(&format!("{}{}", params.prefix, b_id))?;
         let mut seens = rustc_hash::FxHashSet::default();
 
@@ -99,6 +107,7 @@ fn main() -> Result<()> {
             fusion.clear();
         }
 
+	log::info!("Write bucket {}", b_id);
         writer.write_minimizer_seq_section(
             &seq2bits::kmer2seq(*b_id, params.m).into_bytes(),
             &mini_poss[..],
@@ -107,6 +116,7 @@ fn main() -> Result<()> {
         )?;
     }
 
+    log::info!("Write bucket of multiple minimizer {}", b_id);
     if std::path::Path::new(&format!("{}multiple", params.prefix)).exists() {
         let bucket = bucket::read(&format!("{}multiple", params.prefix))?;
         let mut sequences = Vec::new();
