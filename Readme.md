@@ -29,6 +29,8 @@ By default csv delimiter is comma if you want use tabulation call with `-d $'\t'
 
 **Warning** kmers2kff writes temporary files with a name like `{prefix}{a number}` if you run several kmers2kff at the same time be careful that their prefix is different to avoid collision between temporary files.
 
+If `RUST_LOG` is set with `info` value kmers2kff write some log in stderr.
+
 
 Complete cli:
 ```
