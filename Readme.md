@@ -1,6 +1,8 @@
 # kmers2kff 🧬 💻
 
 [![License](https://img.shields.io/badge/license-AGPL--3.0-green)](https://github.com/Kmer-File-Format/kmers2kff/blob/master/LICENSE)
+[![CI](https://github.com/Kmer-File-Format/kmers2kff/workflows/CI/badge.svg)](https://github.com/Kmer-File-Format/kmers2kff/actions)
+[![CodeCov](https://codecov.io/gh/Kmer-File-Format/kmers2kff/branch/master/graph/badge.svg)](https://codecov.io/gh/Kmer-File-Format/kmers2kff)
 
 A tools to convert a list of kmer with count (in csv format) as kff file with minimizer compression
 
