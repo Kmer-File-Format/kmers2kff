@@ -24,7 +24,8 @@ rm tmp/
 
 Kmer size must be lower than 65, minimizer size must be lower than kmer size.
 By default csv delimiter is comma if you want use tabulation call with `-d $'\t'`.
-kmers2kff write temporary file in tmp directory.
+
+**Warning** kmers2kff writes temporary files with a name like `{prefix}{a number}` if you run several kmers2kff at the same time be careful that their prefix is different to avoid collision between temporary files.
 
 
 Complete cli:
@@ -49,7 +50,24 @@ OPTIONS:
     -p, --prefix <prefix>          Prefix add before temporary file
 ```
 
-## Build 
+## Build and contribute
+
+```
+git clone https://github.com/Kmer-File-Format/kmers2kff.git
+cd kmers2kff
+cargo build [--release]
+```
+
+You can create pull request but before please run this command:
+
+```
+cargo test
+cargo fmt
+cargo clippy -- -D warnings
+cargo test
+```
+
+All this command must finish without error.
 
 ## Minimum supported Rust version
 
