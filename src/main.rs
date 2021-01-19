@@ -32,7 +32,7 @@ fn main() -> Result<()> {
 
     // iterate over bucket
     for b_id in bob.iter() {
-        let bucket = bucket::read(format!("{}{}", params.prefix, b_id))?;
+        let bucket = bucket::read(&format!("{}{}", params.prefix, b_id))?;
         let mut seens = rustc_hash::FxHashSet::default();
 
         let mut mini_poss = Vec::new();
@@ -107,19 +107,20 @@ fn main() -> Result<()> {
         )?;
     }
 
-    let bucket = bucket::read(format!("{}multiple", params.prefix))?;
-    let mut sequences = Vec::new();
-    let mut datas = Vec::new();
+    if std::path::Path::new(&format!("{}multiple", params.prefix)).exists() {
+	let bucket = bucket::read(&format!("{}multiple", params.prefix))?;
+	let mut sequences = Vec::new();
+	let mut datas = Vec::new();
 
-    for kmer in bucket.keys() {
-        sequences.push(seq2bits::kmer2seq(*kmer, params.k));
-        datas.push([*bucket
-            .get(&kmer)
-            .ok_or_else(|| anyhow!("counts not present"))?])
+	for kmer in bucket.keys() {
+            sequences.push(seq2bits::kmer2seq(*kmer, params.k));
+            datas.push([*bucket
+			.get(&kmer)
+			.ok_or_else(|| anyhow!("counts not present"))?])
+	}
+
+	writer.write_raw_seq_section(&sequences[..], &datas[..])?;
     }
-
-    writer.write_raw_seq_section(&sequences[..], &datas[..])?;
-
     clean_temp_file(bob, &params.prefix).with_context(|| "clean temporary file")?;
 
     Ok(())

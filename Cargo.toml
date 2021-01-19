@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 kff        = {git = "https://github.com/Kmer-File-Format/kff-rust-api.git"}
-rustc-hash = "1.1.0"
+rustc-hash = "1"
 fasthash   = "0.4"
 csv	   = "1"
 
