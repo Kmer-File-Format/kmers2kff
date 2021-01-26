@@ -8,6 +8,53 @@ use anyhow::{Context, Result};
 /* local use */
 use crate::seq2bits;
 
+pub fn build(
+    input: &str,
+    k: u8,
+    m: u8,
+    delimiter: u8,
+) -> Result<(
+    rustc_hash::FxHashSet<u128>,
+    rustc_hash::FxHashMap<String, rustc_hash::FxHashMap<u128, u8>>,
+)> {
+    let mut bob = rustc_hash::FxHashSet::default();
+    let mut mini2kmers = rustc_hash::FxHashMap::default();
+
+    let input =
+        std::io::BufReader::new(std::fs::File::open(input).with_context(|| "Open input file")?);
+    let mut reader = csv::ReaderBuilder::new()
+        .delimiter(delimiter)
+        .has_headers(false)
+        .from_reader(input);
+    let mut iter = reader.records();
+
+    while let Some(Ok(record)) = iter.next() {
+        let mut kmer = seq2bits::seq2bit(record[0].as_bytes());
+        let count = u8::from_str(&record[1])?;
+
+        let (minimizer, _, forward) = seq2bits::get_minimizer(kmer, k, m);
+        kmer = if forward {
+            kmer
+        } else {
+            seq2bits::revcomp(kmer, k)
+        };
+
+        if seq2bits::multiple_mini(kmer, minimizer, k, m) {
+            mini2kmers
+                .entry("multiple".to_string())
+                .or_insert_with(rustc_hash::FxHashMap::default)
+                .insert(kmer, count);
+        } else {
+            mini2kmers
+                .entry(format!("{}", minimizer))
+                .or_insert_with(rustc_hash::FxHashMap::default)
+                .insert(kmer, count);
+            bob.insert(minimizer);
+        }
+    }
+
+    Ok((bob, mini2kmers))
+}
 pub fn create(
     input: &str,
     prefix: &str,

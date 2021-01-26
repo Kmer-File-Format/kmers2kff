@@ -16,13 +16,8 @@ fn main() -> Result<()> {
     log::info!("Start of bucket creation");
 
     // generate bucket
-    let bob = bucket::create(
-        &params.input,
-        &params.prefix,
-        params.k,
-        params.m,
-        params.delimiter as u8,
-    )?;
+    let (bob, mini2kmers) =
+        bucket::build(&params.input, params.k, params.m, params.delimiter as u8)?;
 
     log::info!("End of bucket creation");
 
@@ -40,7 +35,9 @@ fn main() -> Result<()> {
     for b_id in bob.iter() {
         log::info!("Compress bucket {}", b_id);
 
-        let bucket = bucket::read(&format!("{}{}", params.prefix, b_id))?;
+        let bucket = mini2kmers
+            .get(&format!("{}", b_id))
+            .with_context(|| "minimizer id isn't in bucket")?;
         let mut seens = rustc_hash::FxHashSet::default();
 
         let mut mini_poss = Vec::new();
@@ -117,8 +114,8 @@ fn main() -> Result<()> {
     }
 
     log::info!("Write bucket of multiple minimizer");
-    if std::path::Path::new(&format!("{}multiple", params.prefix)).exists() {
-        let bucket = bucket::read(&format!("{}multiple", params.prefix))?;
+    if mini2kmers.contains_key("multiple") {
+        let bucket = mini2kmers.get("multiple").unwrap();
         let mut sequences = Vec::new();
         let mut datas = Vec::new();
 
@@ -131,7 +128,6 @@ fn main() -> Result<()> {
 
         writer.write_raw_seq_section(&sequences[..], &datas[..])?;
     }
-    clean_temp_file(bob, &params.prefix).with_context(|| "clean temporary file")?;
 
     Ok(())
 }
